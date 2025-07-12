@@ -22,100 +22,81 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inject enhanced CSS styling
     const columnAnalysisCSS = `
     <style>
-    /* Modern Column Analysis Styling */
+    /* Original Theme with Enhanced Buttons Only */
     .column-analysis-container {
-        max-width: 1400px;
+        max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
     }
 
     .dashboard-header {
         text-align: center;
-        margin-bottom: 40px;
-        padding: 40px;
-        background: rgba(255, 255, 255, 0.95);
-        color: #1a202c;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
+        margin-bottom: 30px;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 12px;
     }
 
     .dashboard-header h2 {
-        margin: 0 0 15px 0;
-        font-size: 3em;
-        font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        margin: 0 0 10px 0;
+        font-size: 2em;
     }
 
     .dashboard-header p {
         margin: 0;
-        opacity: 0.8;
-        font-size: 1.2em;
-        font-weight: 500;
+        opacity: 0.9;
     }
 
-    /* Dataset and Column Selectors */
+    /* Dataset and column selectors */
     .dataset-selector, .column-selector {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        margin-bottom: 25px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
     }
 
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
 
     .form-group label {
         display: block;
-        margin-bottom: 10px;
-        font-weight: 700;
-        color: #2d3748;
-        font-size: 1.1em;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
     }
 
     .form-control {
         width: 100%;
-        padding: 16px 20px;
-        border: 3px solid #e2e8f0;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 500;
-        background: white;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        padding: 12px 16px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
     }
 
     .form-control:focus {
         outline: none;
         border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-    /* Enhanced Button Styling */
+    /* Enhanced Button Styling - Only Change */
     .btn, button {
-        padding: 16px 32px;
+        padding: 14px 28px;
         font-size: 16px;
-        font-weight: 700;
+        font-weight: 600;
         border: none;
-        border-radius: 12px;
+        border-radius: 8px;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        min-width: 160px;
+        transition: all 0.3s ease;
+        text-transform: none;
+        min-width: 140px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         position: relative;
         overflow: hidden;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     }
 
     .btn::before, button::before {
@@ -134,12 +115,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     .btn:hover, button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn:active, button:active {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .btn-primary {
@@ -147,200 +124,122 @@ document.addEventListener('DOMContentLoaded', function() {
         color: white;
     }
 
-    .btn-primary:hover {
-        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-    }
-
     .btn-secondary {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
         color: white;
-    }
-
-    .btn-secondary:hover {
-        background: linear-gradient(135deg, #3182ce 0%, #0891b2 100%);
     }
 
     .btn-success {
-        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
         color: white;
-    }
-
-    .btn-success:hover {
-        background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
     }
 
     .btn-warning {
-        background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-        color: white;
-    }
-
-    .btn-warning:hover {
-        background: linear-gradient(135deg, #dd6b20 0%, #c05621 100%);
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+        color: #212529;
     }
 
     .btn-danger {
-        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         color: white;
     }
 
-    .btn-danger:hover {
-        background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-    }
-
-    /* Large Action Buttons */
+    /* Action buttons - larger size */
     .action-button {
-        padding: 20px 40px;
-        font-size: 18px;
-        font-weight: 800;
-        min-width: 200px;
-        border-radius: 16px;
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-    }
-
-    .action-button:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
-    }
-
-    /* Quick Action Buttons */
-    .quick-action-btn {
-        padding: 18px 36px;
+        padding: 16px 32px;
         font-size: 16px;
         font-weight: 700;
-        border-radius: 14px;
         min-width: 180px;
-        margin: 10px;
-        background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
-        color: white;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 8px 16px rgba(168, 85, 247, 0.3);
     }
 
-    .quick-action-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 24px rgba(168, 85, 247, 0.4);
-        background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
-    }
-
-    /* Tab Navigation */
+    /* Tab styling */
     .tab-buttons {
         display: flex;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 16px;
-        padding: 8px;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        overflow-x: auto;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 4px;
+        margin-bottom: 20px;
     }
 
     .tab-button {
         flex: 1;
-        padding: 16px 24px;
+        padding: 12px 20px;
         background: transparent;
         border: none;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 15px;
-        color: #64748b;
+        border-radius: 6px;
+        font-weight: 500;
+        color: #6c757d;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        white-space: nowrap;
-        min-width: 140px;
+        transition: all 0.3s ease;
     }
 
     .tab-button:hover {
         background: rgba(102, 126, 234, 0.1);
         color: #667eea;
-        transform: translateY(-1px);
     }
 
     .tab-button.active {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
     }
 
-    /* Tab Content */
     .tab-content {
         display: none;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     .tab-content.active {
         display: block;
-        animation: fadeInUp 0.5s ease-out;
     }
 
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Transformation Section Styling */
+    /* Transformation sections */
     .transformation-sections {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 30px;
-        margin-top: 25px;
+        gap: 25px;
+        margin-top: 20px;
     }
 
     .transformation-section {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        backdrop-filter: blur(10px);
-    }
-
-    .transformation-section:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e2e8f0;
     }
 
     .section-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 30px;
-        color: white;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 20px;
+        border-bottom: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 20px;
+        gap: 15px;
     }
 
     .section-header h5 {
         margin: 0;
-        font-size: 1.4em;
-        font-weight: 800;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        color: #1e293b;
+        font-size: 1.1em;
+        font-weight: 600;
     }
 
     .transformation-controls, .cleaning-controls, .encoding-controls, .export-controls {
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 15px;
         flex-wrap: wrap;
     }
 
     .cleaning-options {
         display: flex;
-        gap: 25px;
+        gap: 20px;
         align-items: center;
         flex-wrap: wrap;
     }
@@ -348,143 +247,107 @@ document.addEventListener('DOMContentLoaded', function() {
     .cleaning-options label {
         display: flex;
         align-items: center;
-        gap: 12px;
-        color: white;
-        font-size: 16px;
-        font-weight: 600;
+        gap: 8px;
+        color: #64748b;
+        font-size: 0.9em;
         cursor: pointer;
-        padding: 12px 16px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.15);
-        transition: all 0.3s ease;
-        backdrop-filter: blur(5px);
-    }
-
-    .cleaning-options label:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-1px);
     }
 
     .cleaning-options input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        accent-color: #fbbf24;
-        cursor: pointer;
+        width: 16px;
+        height: 16px;
+        accent-color: #3b82f6;
     }
 
     .section-content {
-        padding: 35px;
-        min-height: 150px;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 25px;
+        min-height: 120px;
     }
 
-    /* Analysis Result Styling */
+    /* Analysis results */
     .analysis-result {
         background: white;
-        border-radius: 16px;
-        padding: 30px;
+        border-radius: 12px;
+        padding: 25px;
         border: 2px solid #e2e8f0;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 25px;
-        transition: all 0.3s ease;
-    }
-
-    .analysis-result:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
     }
 
     .analysis-result h6 {
         color: #1e293b;
-        font-size: 1.3em;
-        font-weight: 800;
-        margin: 0 0 20px 0;
-        padding-bottom: 12px;
-        border-bottom: 3px solid #667eea;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-size: 1.2em;
+        font-weight: 700;
+        margin: 0 0 15px 0;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 8px;
     }
 
     .analysis-summary {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border-radius: 12px;
-        padding: 25px;
-        margin: 20px 0;
-        border-left: 5px solid #667eea;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 15px 0;
+        border-left: 4px solid #667eea;
     }
 
     .stats-summary {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
     }
 
     .stat-summary-item {
         background: white;
-        padding: 20px;
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-    }
-
-    .stat-summary-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-        border-color: #667eea;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     .stat-summary-item strong {
         color: #374151;
-        font-weight: 700;
-        font-size: 1em;
+        font-weight: 600;
     }
 
     .stat-summary-item span {
         color: #667eea;
-        font-weight: 800;
-        font-size: 1.2em;
+        font-weight: 700;
+        font-size: 1.1em;
     }
 
     .recommendation-box {
         background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        border: 3px solid #f59e0b;
-        border-radius: 16px;
-        padding: 25px;
-        margin: 25px 0;
-        box-shadow: 0 8px 16px rgba(245, 158, 11, 0.2);
+        border: 2px solid #f59e0b;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
     }
 
     .recommendation-box h6 {
         color: #92400e;
-        margin: 0 0 15px 0;
-        font-weight: 800;
-        font-size: 1.1em;
+        margin: 0 0 10px 0;
+        font-weight: 700;
     }
 
     .recommendation-box p {
         color: #78350f;
         margin: 0;
-        font-weight: 600;
-        line-height: 1.6;
-        font-size: 1em;
+        font-weight: 500;
+        line-height: 1.5;
     }
 
     .status-badge {
-        padding: 10px 20px;
-        border-radius: 25px;
+        padding: 8px 16px;
+        border-radius: 20px;
         font-size: 14px;
-        font-weight: 700;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        letter-spacing: 0.5px;
     }
 
     .status-badge.success {
@@ -504,22 +367,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     .error-message {
         background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
-        border: 3px solid #ef4444;
+        border: 2px solid #ef4444;
         color: #991b1b;
-        padding: 25px;
-        border-radius: 16px;
-        font-weight: 700;
+        padding: 20px;
+        border-radius: 12px;
+        font-weight: 600;
         text-align: center;
-        font-size: 1.1em;
-        box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2);
     }
 
     .loading-spinner {
         display: inline-block;
-        width: 50px;
-        height: 50px;
-        border: 5px solid #f3f3f3;
-        border-top: 5px solid #667eea;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin: 20px auto;
@@ -530,95 +391,40 @@ document.addEventListener('DOMContentLoaded', function() {
         100% { transform: rotate(360deg); }
     }
 
-    /* Overview Cards */
+    /* Overview cards */
     .overview-cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 25px;
-        margin-top: 25px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
     }
 
     .overview-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
-        padding: 25px;
-        border-radius: 16px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
     }
 
     .overview-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
     }
 
     .overview-card h6 {
         margin: 0 0 15px 0;
-        color: #1e293b;
-        font-weight: 800;
-        font-size: 1.1em;
+        color: #495057;
+        font-weight: 600;
     }
 
     .overview-card .metric-value {
-        font-size: 2em;
-        font-weight: 900;
-        color: #667eea;
-        margin: 10px 0;
+        font-size: 1.8em;
+        font-weight: 700;
+        color: #2c3e50;
     }
 
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .column-analysis-container {
-            padding: 15px;
-        }
-
-        .dashboard-header {
-            padding: 25px;
-        }
-
-        .dashboard-header h2 {
-            font-size: 2.2em;
-        }
-
-        .section-header {
-            flex-direction: column;
-            align-items: stretch;
-            text-align: center;
-            padding: 25px;
-        }
-        
-        .transformation-controls, .cleaning-controls, .encoding-controls, .export-controls {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .cleaning-options {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-        }
-        
-        .form-control, .btn, .action-button {
-            width: 100%;
-            min-width: auto;
-        }
-
-        .stats-summary {
-            grid-template-columns: 1fr;
-        }
-
-        .tab-buttons {
-            flex-direction: column;
-        }
-
-        .tab-button {
-            min-width: auto;
-            width: 100%;
-        }
-    }
-
-    /* Pattern and Quality Result Styling */
+    /* Pattern and quality results */
     .pattern-result, .quality-metric {
         background: white;
         border-radius: 12px;
@@ -626,13 +432,6 @@ document.addEventListener('DOMContentLoaded', function() {
         margin: 15px 0;
         border: 2px solid #e2e8f0;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-    }
-
-    .pattern-result:hover, .quality-metric:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        border-color: #667eea;
     }
 
     .pattern-result h6, .quality-metric h6 {
@@ -673,6 +472,34 @@ document.addEventListener('DOMContentLoaded', function() {
     .metric-score.poor {
         background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
         color: #991b1b;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .section-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .transformation-controls, .cleaning-controls, .encoding-controls, .export-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .cleaning-options {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .form-control, .btn, .action-button {
+            width: 100%;
+            min-width: auto;
+        }
+
+        .stats-summary {
+            grid-template-columns: 1fr;
+        }
     }
     </style>
     `;
@@ -718,17 +545,47 @@ document.addEventListener('DOMContentLoaded', function() {
         // Relationship analysis
         document.getElementById('analyze-relationship').addEventListener('click', analyzeRelationship);
 
-        // Transformation section event listeners
-        document.getElementById('run-transformation').addEventListener('click', runTransformationAnalysis);
-        document.getElementById('run-cleaning').addEventListener('click', runCleaningAnalysis);
-        document.getElementById('run-encoding').addEventListener('click', runEncodingAnalysis);
-        document.getElementById('export-analysis').addEventListener('click', exportAnalysisData);
-        document.getElementById('export-cleaned-data').addEventListener('click', exportCleanedDataInfo);
+        // Transformation section event listeners - Fixed
+        const runTransformationBtn = document.getElementById('run-transformation');
+        if (runTransformationBtn) {
+            runTransformationBtn.addEventListener('click', runTransformationAnalysis);
+        }
 
-        // Quick action buttons
-        document.getElementById('quick-transform').addEventListener('click', quickTransform);
-        document.getElementById('quick-clean').addEventListener('click', quickClean);
-        document.getElementById('quick-export').addEventListener('click', quickExport);
+        const runCleaningBtn = document.getElementById('run-cleaning');
+        if (runCleaningBtn) {
+            runCleaningBtn.addEventListener('click', runCleaningAnalysis);
+        }
+
+        const runEncodingBtn = document.getElementById('run-encoding');
+        if (runEncodingBtn) {
+            runEncodingBtn.addEventListener('click', runEncodingAnalysis);
+        }
+
+        const exportAnalysisBtn = document.getElementById('export-analysis');
+        if (exportAnalysisBtn) {
+            exportAnalysisBtn.addEventListener('click', exportAnalysisData);
+        }
+
+        const exportCleanedDataBtn = document.getElementById('export-cleaned-data');
+        if (exportCleanedDataBtn) {
+            exportCleanedDataBtn.addEventListener('click', exportCleanedDataInfo);
+        }
+
+        // Quick action buttons (if they exist)
+        const quickTransformBtn = document.getElementById('quick-transform');
+        if (quickTransformBtn) {
+            quickTransformBtn.addEventListener('click', quickTransform);
+        }
+
+        const quickCleanBtn = document.getElementById('quick-clean');
+        if (quickCleanBtn) {
+            quickCleanBtn.addEventListener('click', quickClean);
+        }
+
+        const quickExportBtn = document.getElementById('quick-export');
+        if (quickExportBtn) {
+            quickExportBtn.addEventListener('click', quickExport);
+        }
     }
 
     async function loadDatasets() {
@@ -1808,71 +1665,83 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`/api/column_analysis/export/${currentDatasetId}?column=${encodeURIComponent(currentColumn.name)}&format=${exportFormat}`);
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to export analysis');
+                const errorText = await response.text();
+                throw new Error(`Failed to export analysis: ${errorText}`);
             }
 
             const data = await response.json();
-            if (data.success && data.export_data) {
+            
+            if (data.success) {
                 // Create and download the file
                 const filename = `${currentColumn.name}_analysis.${exportFormat}`;
                 let fileContent;
                 let mimeType;
 
-                switch (exportFormat) {
-                    case 'json':
-                        fileContent = JSON.stringify(data.export_data, null, 2);
-                        mimeType = 'application/json';
-                        break;
-                    case 'csv':
-                        // Convert analysis data to CSV format
-                        fileContent = convertToCSV(data.export_data);
-                        mimeType = 'text/csv';
-                        break;
-                    case 'excel':
-                        // For Excel, we'll export as JSON for now
-                        fileContent = JSON.stringify(data.export_data, null, 2);
-                        mimeType = 'application/json';
-                        break;
-                    default:
-                        fileContent = JSON.stringify(data.export_data, null, 2);
-                        mimeType = 'application/json';
+                if (data.export_data) {
+                    switch (exportFormat) {
+                        case 'json':
+                            fileContent = JSON.stringify(data.export_data, null, 2);
+                            mimeType = 'application/json';
+                            break;
+                        case 'csv':
+                            fileContent = convertToCSV(data.export_data);
+                            mimeType = 'text/csv';
+                            break;
+                        case 'excel':
+                            fileContent = JSON.stringify(data.export_data, null, 2);
+                            mimeType = 'application/json';
+                            break;
+                        default:
+                            fileContent = JSON.stringify(data.export_data, null, 2);
+                            mimeType = 'application/json';
+                    }
+
+                    downloadFile(filename, fileContent, mimeType);
+
+                    // Show success message with stats
+                    const exportInfo = data.export_info || {};
+                    const exportStats = exportInfo.export_stats || {
+                        total_sections: 'N/A',
+                        completed_sections: 'N/A',
+                        data_points_analyzed: 0,
+                        analysis_completeness: 100
+                    };
+
+                    resultsContainer.innerHTML = `
+                        <div class="analysis-result">
+                            <h6>📤 Export Successful</h6>
+                            <div class="analysis-summary">
+                                <p><strong>File:</strong> ${filename}</p>
+                                <p><strong>Format:</strong> ${exportFormat.toUpperCase()}</p>
+                                <p><strong>Size:</strong> ${(fileContent.length / 1024).toFixed(2)} KB</p>
+                                <span class="status-badge success">Downloaded</span>
+                            </div>
+                            
+                            <div class="stats-summary">
+                                <div class="stat-summary-item">
+                                    <strong>Total Sections</strong>
+                                    <span>${exportStats.total_sections}</span>
+                                </div>
+                                <div class="stat-summary-item">
+                                    <strong>Completed</strong>
+                                    <span>${exportStats.completed_sections}</span>
+                                </div>
+                                <div class="stat-summary-item">
+                                    <strong>Data Points</strong>
+                                    <span>${exportStats.data_points_analyzed.toLocaleString()}</span>
+                                </div>
+                                <div class="stat-summary-item">
+                                    <strong>Completeness</strong>
+                                    <span>${exportStats.analysis_completeness}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('No export data received from server');
                 }
-
-                downloadFile(filename, fileContent, mimeType);
-
-                resultsContainer.innerHTML = `
-                    <div class="analysis-result">
-                        <h6>📤 Export Successful</h6>
-                        <div class="analysis-summary">
-                            <p><strong>File:</strong> ${filename}</p>
-                            <p><strong>Format:</strong> ${exportFormat.toUpperCase()}</p>
-                            <p><strong>Size:</strong> ${(fileContent.length / 1024).toFixed(2)} KB</p>
-                            <span class="status-badge success">Downloaded</span>
-                        </div>
-                        
-                        <div class="stats-summary">
-                            <div class="stat-summary-item">
-                                <strong>Total Sections</strong>
-                                <span>${data.export_info.export_stats.total_sections}</span>
-                            </div>
-                            <div class="stat-summary-item">
-                                <strong>Completed</strong>
-                                <span>${data.export_info.export_stats.completed_sections}</span>
-                            </div>
-                            <div class="stat-summary-item">
-                                <strong>Data Points</strong>
-                                <span>${data.export_info.export_stats.data_points_analyzed.toLocaleString()}</span>
-                            </div>
-                            <div class="stat-summary-item">
-                                <strong>Completeness</strong>
-                                <span>${data.export_info.export_stats.analysis_completeness}%</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
             } else {
-                throw new Error(data.error || 'Failed to export analysis');
+                throw new Error(data.error || 'Export failed');
             }
 
         } catch (error) {
