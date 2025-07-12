@@ -80,81 +80,98 @@
 
         <!-- Transformation Tab -->
         <div id="transformation" class="tab-content">
-            <h4>Data Transformation</h4>
-            
             <div class="transformation-sections">
                 <!-- Transformation Analysis Section -->
                 <div class="transformation-section">
                     <div class="section-header">
-                        <h5>🔄 Transformation Analysis</h5>
+                        <h5>� Transformation Analysis</h5>
                         <div class="transformation-controls">
                             <select id="transformation-type" class="form-control">
                                 <option value="standardize">Standardize (Z-score)</option>
                                 <option value="normalize">Normalize (Min-Max)</option>
                                 <option value="log">Log Transform</option>
-                                <option value="sqrt">Square Root Transform</option>
+                                <option value="sqrt">Square Root</option>
+                                <option value="reciprocal">Reciprocal</option>
                             </select>
-                            <button id="run-transformation" class="btn btn-primary">Analyze Transformation</button>
+                            <button id="run-transformation" class="btn btn-primary action-button">Analyze Transformation</button>
                         </div>
                     </div>
-                    <div id="transformation-results" class="section-content">
-                        <p>Select a transformation type and click "Analyze Transformation" to see the analysis.</p>
+                    <div class="section-content">
+                        <div id="transformation-results">
+                            <p>Select a transformation type and click "Analyze Transformation" to see the analysis.</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Clean Data Section -->
+                <!-- Data Cleaning Section -->
                 <div class="transformation-section">
                     <div class="section-header">
-                        <h5>🧹 Clean Data</h5>
+                        <h5>🧹 Data Cleaning</h5>
                         <div class="cleaning-controls">
                             <div class="cleaning-options">
-                                <label><input type="checkbox" id="remove-nulls" checked> Remove null values</label>
-                                <label><input type="checkbox" id="remove-duplicates" checked> Remove duplicates</label>
-                                <label><input type="checkbox" id="remove-outliers"> Remove outliers</label>
+                                <label>
+                                    <input type="checkbox" id="remove-nulls" checked>
+                                    Remove Null Values
+                                </label>
+                                <label>
+                                    <input type="checkbox" id="remove-duplicates" checked>
+                                    Remove Duplicates
+                                </label>
+                                <label>
+                                    <input type="checkbox" id="remove-outliers">
+                                    Remove Outliers
+                                </label>
                             </div>
-                            <button id="run-cleaning" class="btn btn-secondary">Analyze Cleaning Impact</button>
+                            <button id="run-cleaning" class="btn btn-warning action-button">Analyze Cleaning Impact</button>
                         </div>
                     </div>
-                    <div id="cleaning-results" class="section-content">
-                        <p>Configure cleaning options and click "Analyze Cleaning Impact" to see the impact analysis.</p>
+                    <div class="section-content">
+                        <div id="cleaning-results">
+                            <p>Configure cleaning options and click "Analyze Cleaning Impact" to see the impact analysis.</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Encode Data Section -->
+                <!-- Data Encoding Section -->
                 <div class="transformation-section">
                     <div class="section-header">
-                        <h5>🔤 Encode Data</h5>
+                        <h5>🔤 Data Encoding</h5>
                         <div class="encoding-controls">
                             <select id="encoding-type" class="form-control">
                                 <option value="label">Label Encoding</option>
                                 <option value="onehot">One-Hot Encoding</option>
+                                <option value="binary">Binary Encoding</option>
                                 <option value="target">Target Encoding</option>
-                                <option value="ordinal">Ordinal Encoding</option>
+                                <option value="frequency">Frequency Encoding</option>
                             </select>
-                            <button id="run-encoding" class="btn btn-warning">Analyze Encoding</button>
+                            <button id="run-encoding" class="btn btn-success action-button">Analyze Encoding</button>
                         </div>
                     </div>
-                    <div id="encoding-results" class="section-content">
-                        <p>Select an encoding type and click "Analyze Encoding" to see the encoding analysis.</p>
+                    <div class="section-content">
+                        <div id="encoding-results">
+                            <p>Select an encoding type and click "Analyze Encoding" to see the encoding analysis.</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Export Data Section -->
+                <!-- Export Section -->
                 <div class="transformation-section">
                     <div class="section-header">
                         <h5>📤 Export Data</h5>
                         <div class="export-controls">
                             <select id="export-format" class="form-control">
-                                <option value="json">JSON Format</option>
                                 <option value="csv">CSV Format</option>
+                                <option value="json">JSON Format</option>
                                 <option value="excel">Excel Format</option>
                             </select>
-                            <button id="export-analysis" class="btn btn-success">Export Analysis</button>
-                            <button id="export-cleaned-data" class="btn btn-info">Export Cleaned Data Info</button>
+                            <button id="export-analysis" class="btn btn-primary action-button">Export Analysis</button>
+                            <button id="export-cleaned-data" class="btn btn-secondary action-button">Export Cleaned Data</button>
                         </div>
                     </div>
-                    <div id="export-results" class="section-content">
-                        <p>Select export format and click the appropriate export button to download data.</p>
+                    <div class="section-content">
+                        <div id="export-results">
+                            <p>Select export format and click the appropriate export button to download data.</p>
+                        </div>
                     </div>
                 </div>
             </div>
