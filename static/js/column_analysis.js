@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const columnOverview = document.getElementById('column-overview');
     const analysisTabs = document.getElementById('analysis-tabs');
     const columnActions = document.getElementById('column-actions');
+    const loadingModal = document.getElementById('column-loading-modal');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
     
     // Initialize
     setupEventListeners();
@@ -151,6 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         border-radius: 4px;
     }
 
+    /* Modal Styling */
     .modal {
         position: fixed;
         top: 0;
@@ -173,6 +177,183 @@ document.addEventListener('DOMContentLoaded', function() {
         max-height: 80vh;
         overflow-y: auto;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        position: relative;
+    }
+
+    .result-modal-content {
+        max-width: 800px;
+        text-align: left;
+        padding: 0;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 30px;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+    }
+
+    .modal-header h4 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 1.5em;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6b7280;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .modal-body {
+        padding: 0 30px 30px 30px;
+    }
+
+    /* Transform, Clean, Encode Modal Styling */
+    .analysis-result {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin: 20px 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #007bff;
+    }
+
+    .analysis-result h5 {
+        color: #1e293b;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+        font-weight: 600;
+    }
+
+    .analysis-result p {
+        color: #64748b;
+        margin-bottom: 10px;
+        line-height: 1.6;
+    }
+
+    .analysis-result strong {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .analysis-summary {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 20px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border: 1px solid #e2e8f0;
+    }
+
+    .analysis-summary h6 {
+        color: #1e293b;
+        margin-bottom: 10px;
+        font-size: 1em;
+        font-weight: 600;
+    }
+
+    .analysis-summary ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+
+    .analysis-summary li {
+        color: #64748b;
+        margin-bottom: 5px;
+        line-height: 1.5;
+    }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        margin: 15px 0;
+    }
+
+    .stat-summary-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #28a745;
+    }
+
+    .stat-summary-item strong {
+        display: block;
+        color: #6c757d;
+        font-size: 0.8em;
+        margin-bottom: 5px;
+    }
+
+    .stat-summary-item span {
+        color: #2c3e50;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .recommendation-box {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        padding: 20px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .recommendation-box h6 {
+        color: #1e40af;
+        margin-bottom: 10px;
+        font-size: 1em;
+        font-weight: 600;
+    }
+
+    .recommendation-box p {
+        color: #1e40af;
+        margin-bottom: 5px;
+        line-height: 1.5;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.success {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #166534;
+    }
+
+    .status-badge.warning {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+
+    .status-badge.info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
     }
 
     .loading-spinner {
@@ -197,6 +378,8 @@ document.addEventListener('DOMContentLoaded', function() {
         cursor: pointer;
         font-size: 14px;
         transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
     }
 
     .btn-primary {
@@ -207,6 +390,16 @@ document.addEventListener('DOMContentLoaded', function() {
     .btn-secondary {
         background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
         color: white;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        color: white;
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+        color: #212529;
     }
 
     .btn:hover {
@@ -242,6 +435,124 @@ document.addEventListener('DOMContentLoaded', function() {
 
     .tab-content.active {
         display: block;
+    }
+
+    /* Export Modal Styling */
+    .export-btn-primary {
+        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .export-btn-primary:hover {
+        background: linear-gradient(135deg, #45a049 0%, #1b5e20 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+    }
+
+    .export-btn-secondary {
+        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .export-btn-secondary:hover {
+        background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+    }
+
+    /* Quality metrics styling */
+    .quality-metric {
+        text-align: center;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease;
+    }
+
+    .quality-metric:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .metric-score {
+        font-size: 2.5em;
+        font-weight: 700;
+        margin-bottom: 15px;
+        padding: 15px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .metric-score.good {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #166534;
+    }
+
+    .metric-score.fair {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+
+    .metric-score.poor {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+    }
+
+    /* Results styling */
+    .relationship-result, .outlier-result, .trends-result {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 4px solid #3b82f6;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .success-message {
+        background: #dcfce7;
+        color: #166534;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #bbf7d0;
+        margin: 10px 0;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .column-analysis-container {
+            padding: 10px;
+        }
+        
+        .modal-content {
+            padding: 20px;
+            margin: 20px;
+        }
+        
+        .result-modal-content {
+            max-width: 95vw;
+        }
     }
     </style>
     `;
@@ -1111,20 +1422,28 @@ document.addEventListener('DOMContentLoaded', function() {
             modal = document.createElement('div');
             modal.id = 'result-modal';
             modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content result-modal-content">
-                    <div class="modal-header">
-                        <h4 id="result-modal-title"></h4>
-                        <button onclick="closeResultModal()" class="modal-close">×</button>
-                    </div>
-                    <div class="modal-body" id="result-modal-body"></div>
-                </div>
-            `;
+            modal.innerHTML = `<div id="result-modal-content-wrapper"></div>`;
             document.body.appendChild(modal);
         }
         
-        document.getElementById('result-modal-title').textContent = title;
-        document.getElementById('result-modal-body').innerHTML = content;
+        // If the content already has the full modal structure, use it directly
+        if (content.includes('result-modal-content')) {
+            document.getElementById('result-modal-content-wrapper').innerHTML = content;
+        } else {
+            // Fallback for simple content
+            document.getElementById('result-modal-content-wrapper').innerHTML = `
+                <div class="modal-content result-modal-content">
+                    <div class="modal-header">
+                        <h4>${title}</h4>
+                        <button onclick="closeResultModal()" class="modal-close">×</button>
+                    </div>
+                    <div class="modal-body">
+                        ${content}
+                    </div>
+                </div>
+            `;
+        }
+        
         modal.style.display = 'flex';
     }
     
@@ -1575,8 +1894,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const transformationType = prompt('Enter transformation type (standardize, normalize, log, sqrt):') || 'standardize';
-        
         showLoading();
         try {
             const response = await fetch(`/api/column_analysis/transform/${currentDatasetId}`, {
@@ -1586,7 +1903,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     column: currentColumn.name,
-                    transformation_type: transformationType
+                    transformation_type: 'standardize'
                 })
             });
 
@@ -1599,30 +1916,60 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success && data.transformation_analysis) {
                 const analysis = data.transformation_analysis;
                 let resultHtml = `
-                    <div class="action-result">
-                        <h5>🔄 Transform Analysis: ${analysis.column}</h5>
-                        <p><strong>Method:</strong> ${analysis.method}</p>
-                        <p><strong>Description:</strong> ${analysis.description}</p>
-                        
-                        <h6>Original Statistics:</h6>
-                        <div class="stats-mini-grid">
-                            <div class="mini-stat">Mean: ${safeFormat(analysis.original_stats.mean)}</div>
-                            <div class="mini-stat">Std: ${safeFormat(analysis.original_stats.std)}</div>
-                            <div class="mini-stat">Min: ${safeFormat(analysis.original_stats.min)}</div>
-                            <div class="mini-stat">Max: ${safeFormat(analysis.original_stats.max)}</div>
-                            <div class="mini-stat">Skewness: ${safeFormat(analysis.original_stats.skewness)}</div>
+                    <div class="result-modal-content">
+                        <div class="modal-header">
+                            <h4>🔄 Transform Column - ${analysis.column}</h4>
+                            <button class="modal-close" onclick="closeResultModal()">&times;</button>
                         </div>
-                        
-                        <p><strong>Recommendation:</strong> ${analysis.recommendation}</p>
-                        <p class="status-success">✅ ${data.message}</p>
+                        <div class="modal-body">
+                            <div class="analysis-result">
+                                <h5>📊 Transformation Analysis</h5>
+                                <p><strong>Method:</strong> ${analysis.method}</p>
+                                <p><strong>Description:</strong> ${analysis.description}</p>
+                                <span class="status-badge ${analysis.status === 'analysis_completed' ? 'success' : 'info'}">${analysis.status}</span>
+                            </div>
+                            
+                            <div class="analysis-summary">
+                                <h6>📈 Original Statistics</h6>
+                                <div class="stats-summary">
+                                    <div class="stat-summary-item">
+                                        <strong>Mean</strong>
+                                        <span>${safeFormat(analysis.original_stats.mean)}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Std Dev</strong>
+                                        <span>${safeFormat(analysis.original_stats.std)}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Min</strong>
+                                        <span>${safeFormat(analysis.original_stats.min)}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Max</strong>
+                                        <span>${safeFormat(analysis.original_stats.max)}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Skewness</strong>
+                                        <span>${safeFormat(analysis.original_stats.skewness)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation-box">
+                                <h6>💡 Recommendation</h6>
+                                <p>${analysis.recommendation}</p>
+                            </div>
+                        </div>
                     </div>
                 `;
-                showResultModal('Transform Analysis', resultHtml);
+
+                showResultModal('Transform Column Analysis', resultHtml);
             } else {
-                throw new Error(data.error || 'Transform failed');
+                throw new Error(data.error || 'Failed to get transformation analysis');
             }
+
         } catch (error) {
-            console.error('Transform error:', error);
+            console.error('Transform column error:', error);
             showError('Failed to transform column: ' + error.message);
         } finally {
             hideLoading();
@@ -1635,12 +1982,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const cleaningOptions = {
-            remove_nulls: confirm('Remove null values?'),
-            remove_duplicates: confirm('Remove duplicate values?'),
-            remove_outliers: confirm('Remove outliers?')
-        };
-
         showLoading();
         try {
             const response = await fetch(`/api/column_analysis/clean/${currentDatasetId}`, {
@@ -1650,7 +1991,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     column: currentColumn.name,
-                    options: cleaningOptions
+                    options: {
+                        remove_nulls: true,
+                        remove_duplicates: true,
+                        remove_outliers: false
+                    }
                 })
             });
 
@@ -1663,35 +2008,63 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success && data.cleaning_analysis) {
                 const analysis = data.cleaning_analysis;
                 let resultHtml = `
-                    <div class="action-result">
-                        <h5>🧹 Cleaning Analysis: ${analysis.column}</h5>
-                        
-                        <div class="cleaning-stats">
-                            <div class="stats-mini-grid">
-                                <div class="mini-stat">Original Records: ${analysis.original_count.toLocaleString()}</div>
-                                <div class="mini-stat">Records to Remove: ${analysis.records_to_remove.toLocaleString()}</div>
-                                <div class="mini-stat">Remaining Records: ${analysis.remaining_count.toLocaleString()}</div>
-                                <div class="mini-stat impact-${analysis.impact_percentage > 20 ? 'high' : analysis.impact_percentage > 10 ? 'medium' : 'low'}">
-                                    Impact: ${analysis.impact_percentage}%
+                    <div class="result-modal-content">
+                        <div class="modal-header">
+                            <h4>🧹 Clean Column - ${analysis.column}</h4>
+                            <button class="modal-close" onclick="closeResultModal()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="analysis-result">
+                                <h5>🔍 Cleaning Analysis</h5>
+                                <p><strong>Column:</strong> ${analysis.column}</p>
+                                <p><strong>Impact:</strong> ${analysis.impact_percentage}% of data would be affected</p>
+                                <span class="status-badge ${analysis.status === 'analysis_completed' ? 'success' : 'info'}">${analysis.status}</span>
+                            </div>
+                            
+                            <div class="analysis-summary">
+                                <h6>📊 Data Overview</h6>
+                                <div class="stats-summary">
+                                    <div class="stat-summary-item">
+                                        <strong>Original Count</strong>
+                                        <span>${analysis.original_count.toLocaleString()}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Records to Remove</strong>
+                                        <span>${analysis.records_to_remove.toLocaleString()}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Remaining Count</strong>
+                                        <span>${analysis.remaining_count.toLocaleString()}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Impact</strong>
+                                        <span>${analysis.impact_percentage}%</span>
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <div class="analysis-summary">
+                                <h6>🛠️ Cleaning Actions</h6>
+                                <ul>
+                                    ${analysis.cleaning_actions.map(action => `<li>${action}</li>`).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div class="recommendation-box">
+                                <h6>💡 Recommendation</h6>
+                                <p>${analysis.recommendation}</p>
+                            </div>
                         </div>
-                        
-                        <h6>Cleaning Actions:</h6>
-                        <ul class="cleaning-actions">
-                            ${analysis.cleaning_actions.map(action => `<li>📋 ${action}</li>`).join('')}
-                        </ul>
-                        
-                        <p><strong>⚠️ Recommendation:</strong> ${analysis.recommendation}</p>
-                        <p class="status-success">✅ ${data.message}</p>
                     </div>
                 `;
-                showResultModal('Cleaning Analysis', resultHtml);
+
+                showResultModal('Clean Column Analysis', resultHtml);
             } else {
-                throw new Error(data.error || 'Cleaning failed');
+                throw new Error(data.error || 'Failed to get cleaning analysis');
             }
+
         } catch (error) {
-            console.error('Clean error:', error);
+            console.error('Clean column error:', error);
             showError('Failed to clean column: ' + error.message);
         } finally {
             hideLoading();
@@ -1704,8 +2077,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const encodingType = prompt('Enter encoding type (label, onehot, target, ordinal):') || 'label';
-
         showLoading();
         try {
             const response = await fetch(`/api/column_analysis/encode/${currentDatasetId}`, {
@@ -1715,7 +2086,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     column: currentColumn.name,
-                    encoding_type: encodingType
+                    encoding_type: 'label'
                 })
             });
 
@@ -1728,37 +2099,75 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success && data.encoding_analysis) {
                 const analysis = data.encoding_analysis;
                 let resultHtml = `
-                    <div class="action-result">
-                        <h5>🔤 Encoding Analysis: ${analysis.column}</h5>
-                        <p><strong>Method:</strong> ${analysis.encoding_method}</p>
-                        
-                        <h6>Column Information:</h6>
-                        <div class="stats-mini-grid">
-                            <div class="mini-stat">Unique Values: ${analysis.column_info.unique_values}</div>
-                            <div class="mini-stat">Most Frequent: ${analysis.column_info.most_frequent || 'N/A'}</div>
-                            <div class="mini-stat">Data Type: ${analysis.column_info.data_type}</div>
+                    <div class="result-modal-content">
+                        <div class="modal-header">
+                            <h4>🔤 Encode Column - ${analysis.column}</h4>
+                            <button class="modal-close" onclick="closeResultModal()">&times;</button>
                         </div>
-                        
-                        <h6>Encoding Details:</h6>
-                        <p><strong>Description:</strong> ${analysis.encoding_details.description}</p>
-                        <p><strong>Suitable For:</strong> ${analysis.encoding_details.suitable_for}</p>
-                        <p><strong>Output Columns:</strong> ${analysis.encoding_details.output_columns}</p>
-                        <p><strong>Memory Efficient:</strong> ${analysis.encoding_details.memory_efficient ? '✅ Yes' : '❌ No'}</p>
-                        
-                        <h6>Recommendations:</h6>
-                        <ul class="recommendations-list">
-                            ${analysis.recommendations.map(rec => `<li>💡 ${rec}</li>`).join('')}
-                        </ul>
-                        
-                        <p class="status-success">✅ ${data.message}</p>
+                        <div class="modal-body">
+                            <div class="analysis-result">
+                                <h5>📊 Encoding Analysis</h5>
+                                <p><strong>Column:</strong> ${analysis.column}</p>
+                                <p><strong>Encoding Method:</strong> ${analysis.encoding_method}</p>
+                                <span class="status-badge ${analysis.status === 'analysis_completed' ? 'success' : 'info'}">${analysis.status}</span>
+                            </div>
+                            
+                            <div class="analysis-summary">
+                                <h6>📈 Column Information</h6>
+                                <div class="stats-summary">
+                                    <div class="stat-summary-item">
+                                        <strong>Unique Values</strong>
+                                        <span>${analysis.column_info.unique_values.toLocaleString()}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Most Frequent</strong>
+                                        <span>${analysis.column_info.most_frequent || 'N/A'}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Data Type</strong>
+                                        <span>${analysis.column_info.data_type}</span>
+                                    </div>
+                                    <div class="stat-summary-item">
+                                        <strong>Output Columns</strong>
+                                        <span>${analysis.encoding_details.output_columns}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="analysis-summary">
+                                <h6>🔧 Encoding Details</h6>
+                                <p><strong>Description:</strong> ${analysis.encoding_details.description}</p>
+                                <p><strong>Suitable for:</strong> ${analysis.encoding_details.suitable_for}</p>
+                                <p><strong>Memory Efficient:</strong> ${analysis.encoding_details.memory_efficient ? 'Yes' : 'No'}</p>
+                            </div>
+                            
+                            <div class="analysis-summary">
+                                <h6>📋 Preview Mapping</h6>
+                                <div class="stats-summary">
+                                    ${Object.entries(analysis.preview_mapping).slice(0, 5).map(([key, value]) => `
+                                        <div class="stat-summary-item">
+                                            <strong>${key}</strong>
+                                            <span>${value}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation-box">
+                                <h6>💡 Recommendations</h6>
+                                ${analysis.recommendations.map(rec => `<p>• ${rec}</p>`).join('')}
+                            </div>
+                        </div>
                     </div>
                 `;
-                showResultModal('Encoding Analysis', resultHtml);
+
+                showResultModal('Encode Column Analysis', resultHtml);
             } else {
-                throw new Error(data.error || 'Encoding failed');
+                throw new Error(data.error || 'Failed to get encoding analysis');
             }
+
         } catch (error) {
-            console.error('Encode error:', error);
+            console.error('Encode column error:', error);
             showError('Failed to encode column: ' + error.message);
         } finally {
             hideLoading();
