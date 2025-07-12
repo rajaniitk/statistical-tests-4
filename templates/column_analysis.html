@@ -64,7 +64,7 @@
     <div class="analysis-tabs" id="analysis-tabs" style="display: none;">
         <div class="tab-buttons">
             <button class="tab-button active" data-tab="basic-stats">Basic Statistics</button>
-            <button class="tab-button" data-tab="distribution">Distribution</button>
+            <button class="tab-button" data-tab="transformation">Transformation</button>
             <button class="tab-button" data-tab="patterns">Patterns</button>
             <button class="tab-button" data-tab="quality">Data Quality</button>
             <button class="tab-button" data-tab="relationships">Relationships</button>
@@ -78,16 +78,85 @@
             </div>
         </div>
 
-        <!-- Distribution Tab -->
-        <div id="distribution" class="tab-content">
-            <h4>Value Distribution</h4>
-            <div class="distribution-controls">
-                <button id="show-histogram" class="btn btn-secondary">Histogram</button>
-                <button id="show-boxplot" class="btn btn-secondary">Box Plot</button>
-                <button id="show-value-counts" class="btn btn-secondary">Value Counts</button>
-            </div>
-            <div id="distribution-content" class="chart-content">
-                <!-- Distribution charts will be displayed here -->
+        <!-- Transformation Tab -->
+        <div id="transformation" class="tab-content">
+            <h4>Data Transformation</h4>
+            
+            <div class="transformation-sections">
+                <!-- Transformation Analysis Section -->
+                <div class="transformation-section">
+                    <div class="section-header">
+                        <h5>🔄 Transformation Analysis</h5>
+                        <div class="transformation-controls">
+                            <select id="transformation-type" class="form-control">
+                                <option value="standardize">Standardize (Z-score)</option>
+                                <option value="normalize">Normalize (Min-Max)</option>
+                                <option value="log">Log Transform</option>
+                                <option value="sqrt">Square Root Transform</option>
+                            </select>
+                            <button id="run-transformation" class="btn btn-primary">Analyze Transformation</button>
+                        </div>
+                    </div>
+                    <div id="transformation-results" class="section-content">
+                        <p>Select a transformation type and click "Analyze Transformation" to see the analysis.</p>
+                    </div>
+                </div>
+
+                <!-- Clean Data Section -->
+                <div class="transformation-section">
+                    <div class="section-header">
+                        <h5>🧹 Clean Data</h5>
+                        <div class="cleaning-controls">
+                            <div class="cleaning-options">
+                                <label><input type="checkbox" id="remove-nulls" checked> Remove null values</label>
+                                <label><input type="checkbox" id="remove-duplicates" checked> Remove duplicates</label>
+                                <label><input type="checkbox" id="remove-outliers"> Remove outliers</label>
+                            </div>
+                            <button id="run-cleaning" class="btn btn-secondary">Analyze Cleaning Impact</button>
+                        </div>
+                    </div>
+                    <div id="cleaning-results" class="section-content">
+                        <p>Configure cleaning options and click "Analyze Cleaning Impact" to see the impact analysis.</p>
+                    </div>
+                </div>
+
+                <!-- Encode Data Section -->
+                <div class="transformation-section">
+                    <div class="section-header">
+                        <h5>🔤 Encode Data</h5>
+                        <div class="encoding-controls">
+                            <select id="encoding-type" class="form-control">
+                                <option value="label">Label Encoding</option>
+                                <option value="onehot">One-Hot Encoding</option>
+                                <option value="target">Target Encoding</option>
+                                <option value="ordinal">Ordinal Encoding</option>
+                            </select>
+                            <button id="run-encoding" class="btn btn-warning">Analyze Encoding</button>
+                        </div>
+                    </div>
+                    <div id="encoding-results" class="section-content">
+                        <p>Select an encoding type and click "Analyze Encoding" to see the encoding analysis.</p>
+                    </div>
+                </div>
+
+                <!-- Export Data Section -->
+                <div class="transformation-section">
+                    <div class="section-header">
+                        <h5>📤 Export Data</h5>
+                        <div class="export-controls">
+                            <select id="export-format" class="form-control">
+                                <option value="json">JSON Format</option>
+                                <option value="csv">CSV Format</option>
+                                <option value="excel">Excel Format</option>
+                            </select>
+                            <button id="export-analysis" class="btn btn-success">Export Analysis</button>
+                            <button id="export-cleaned-data" class="btn btn-info">Export Cleaned Data Info</button>
+                        </div>
+                    </div>
+                    <div id="export-results" class="section-content">
+                        <p>Select export format and click the appropriate export button to download data.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -160,12 +229,11 @@
     </div>
 
     <div class="column-actions" id="column-actions" style="display: none;">
-        <h4>Column Actions</h4>
+        <h4>Quick Actions</h4>
         <div class="action-buttons">
-            <button id="transform-column" class="btn btn-primary">Transform Column</button>
-            <button id="clean-column" class="btn btn-secondary">Clean Data</button>
-            <button id="encode-column" class="btn btn-secondary">Encode Values</button>
-            <button id="export-analysis" class="btn btn-secondary">Export Analysis</button>
+            <button id="quick-transform" class="btn btn-primary">Quick Transform</button>
+            <button id="quick-clean" class="btn btn-secondary">Quick Clean</button>
+            <button id="quick-export" class="btn btn-success">Quick Export</button>
         </div>
     </div>
 </div>
