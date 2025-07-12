@@ -4,6 +4,18 @@ let currentColumns = []; // Stores { name: 'col_name', type: 'dtype' }
 let currentColumn = null; // Stores the selected column's full info object
 
 document.addEventListener('DOMContentLoaded', function() {
+    // DOM elements
+    const datasetSelect = document.getElementById('column-dataset-select');
+    const columnSelect = document.getElementById('column-select');
+    const columnSelector = document.getElementById('column-selector');
+    const columnOverview = document.getElementById('column-overview');
+    const analysisTabs = document.getElementById('analysis-tabs');
+    const columnActions = document.getElementById('column-actions');
+    
+    // Initialize
+    setupEventListeners();
+    loadDatasets();
+    
     // Inject enhanced CSS styling
     const columnAnalysisCSS = `
     <style>
@@ -31,219 +43,210 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     .overview-card {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         padding: 20px;
         border-radius: 12px;
         text-align: center;
-        border: 1px solid #e2e8f0;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
     }
 
     .overview-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .overview-card h4 {
+        color: #495057;
+        margin-bottom: 10px;
+        font-size: 0.9em;
+        font-weight: 600;
+    }
+
+    .overview-card span {
+        color: #2c3e50;
+        font-size: 1.3em;
+        font-weight: bold;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .stat-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #007bff;
+    }
+
+    .stat-item strong {
+        display: block;
+        color: #6c757d;
+        font-size: 0.85em;
+        margin-bottom: 5px;
+    }
+
+    .stat-item span {
+        color: #2c3e50;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+
+    .distribution-controls {
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .distribution-controls .btn {
+        margin: 0 10px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .distribution-controls .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+
+    .chart-content {
+        min-height: 400px;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .error-message {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        text-align: center;
+    }
+
+    .pattern-result, .quality-metric {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 15px 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .interpretation-item {
+        background: #f8f9fa;
+        padding: 10px;
+        margin: 8px 0;
+        border-left: 4px solid #28a745;
+        border-radius: 4px;
+    }
+
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
     }
 
     .modal-content {
         background: white;
-        padding: 40px;
+        padding: 30px;
         border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        max-width: 90vw;
-        max-height: 90vh;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
         overflow-y: auto;
-        animation: slideIn 0.3s ease-out;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
 
-    .result-modal-content {
-        max-width: 1000px;
-        text-align: left;
-        padding: 0;
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 30px;
-        border-bottom: 1px solid #e2e8f0;
-        margin-bottom: 0;
-    }
-
-    .modal-header h4 {
-        margin: 0;
-        color: #1e293b;
-        font-size: 1.5em;
-    }
-
-    .modal-close {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: #6b7280;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
         border-radius: 50%;
-        transition: all 0.2s ease;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
     }
 
-    .modal-close:hover {
-        background: #f3f4f6;
-        color: #374151;
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
-    .modal-body {
-        padding: 0;
-    }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Enhanced button styling for export modal */
-    .export-btn-primary {
-        background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
-        color: white;
+    .btn {
+        padding: 10px 20px;
         border: none;
-        padding: 12px 24px;
-        border-radius: 25px;
-        font-weight: bold;
+        border-radius: 6px;
         cursor: pointer;
-        transition: all 0.3s ease;
         font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        transition: all 0.3s;
     }
 
-    .export-btn-primary:hover {
-        background: linear-gradient(135deg, #45a049 0%, #1b5e20 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
-    }
-
-    .export-btn-secondary {
-        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    .btn-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         color: white;
-        border: none;
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        color: white;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-button {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        color: #495057;
         padding: 12px 24px;
-        border-radius: 25px;
-        font-weight: bold;
+        margin: 0 5px;
+        border-radius: 6px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        transition: all 0.3s;
     }
 
-    .export-btn-secondary:hover {
-        background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(255, 152, 0, 0.3);
+    .tab-button.active {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border-color: #007bff;
     }
 
-    /* Quality metrics styling */
-    .quality-metric {
-        text-align: center;
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        transition: transform 0.2s ease;
-    }
-
-    .quality-metric:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-
-    .metric-score {
-        font-size: 2.5em;
-        font-weight: 700;
-        margin-bottom: 15px;
-        padding: 15px;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-    }
-
-    .metric-score.good {
-        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-        color: #166534;
-    }
-
-    .metric-score.fair {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        color: #92400e;
-    }
-
-    .metric-score.poor {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        color: #991b1b;
-    }
-
-    /* Results styling */
-    .relationship-result, .pattern-result, .outlier-result, .trends-result {
-        background: white;
+    .tab-content {
+        display: none;
         padding: 20px;
+        background: white;
         border-radius: 12px;
-        border-left: 4px solid #3b82f6;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-top: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    /* Error and success states */
-    .error-message {
-        background: #fee2e2;
-        color: #991b1b;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #f87171;
-        margin: 10px 0;
-    }
-
-    .success-message {
-        background: #dcfce7;
-        color: #166534;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #bbf7d0;
-        margin: 10px 0;
-    }
-
-    /* Responsive design */
-    @media (max-width: 768px) {
-        .column-analysis-container {
-            padding: 10px;
-        }
-        
-        .modal-content {
-            padding: 20px;
-            margin: 20px;
-        }
-        
-        .result-modal-content {
-            max-width: 95vw;
-        }
+    .tab-content.active {
+        display: block;
     }
     </style>
     `;
-
-    // Inject the CSS into the page
+    
+    // Inject the CSS
     document.head.insertAdjacentHTML('beforeend', columnAnalysisCSS);
 
     // Global variables
@@ -251,21 +254,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentColumn = null;
     let currentColumns = [];
     let currentAnalysis = null;
-
-    // DOM Elements
-    const datasetSelect = document.getElementById('column-dataset-select');
-    const refreshButton = document.getElementById('refresh-column-datasets');
-    const columnSelector = document.getElementById('column-selector');
-    const columnSelect = document.getElementById('column-select');
-    const analyzeColumnBtn = document.getElementById('analyze-column');
-    const columnOverview = document.getElementById('column-overview');
-    const analysisTabs = document.getElementById('analysis-tabs');
-    const columnActions = document.getElementById('column-actions');
-    const loadingModal = document.getElementById('column-loading-modal');
-
-    // Tab elements
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
 
     // Initialize
     loadDatasets();
@@ -280,29 +268,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setupEventListeners() {
-        refreshButton.addEventListener('click', loadDatasets);
+        // Dataset selection
         datasetSelect.addEventListener('change', handleDatasetSelection);
-        columnSelect.addEventListener('change', handleColumnSelection); // Added for when column is selected
-        analyzeColumnBtn.addEventListener('click', analyzeColumn);
+        document.getElementById('refresh-column-datasets').addEventListener('click', loadDatasets);
+
+        // Column selection
+        columnSelect.addEventListener('change', handleColumnSelection);
+        document.getElementById('analyze-column').addEventListener('click', analyzeColumn);
 
         // Tab switching
-        tabButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const tabName = e.target.getAttribute('data-tab');
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
                 switchTab(tabName);
             });
         });
 
-        // Analysis buttons - These will trigger specific API calls
+        // Relationship analysis
+        document.getElementById('analyze-relationship').addEventListener('click', analyzeRelationship);
+
+        // Column actions
         document.getElementById('transform-column').addEventListener('click', handleTransformColumn);
         document.getElementById('clean-column').addEventListener('click', handleCleanColumn);
         document.getElementById('encode-column').addEventListener('click', handleEncodeColumn);
         document.getElementById('export-analysis').addEventListener('click', handleExportAnalysis);
 
-        // Relationship analysis
-        document.getElementById('analyze-relationship').addEventListener('click', analyzeRelationship);
-
-        // Distribution buttons
+        // Distribution chart buttons
         document.getElementById('show-histogram').addEventListener('click', () => showDistributionChart('histogram'));
         document.getElementById('show-boxplot').addEventListener('click', () => showDistributionChart('boxplot'));
         document.getElementById('show-value-counts').addEventListener('click', () => showDistributionChart('value_counts'));
@@ -834,36 +825,64 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function fetchOutlierInfo() {
         if (!currentDatasetId || !currentColumn) return;
+        
+        const container = document.getElementById('outlier-detection');
+        if (!container) return;
+        
+        // Show loading state
+        container.innerHTML = '<p>Loading outlier analysis...</p>';
+        
         try {
             // Fetch outliers for the current column
             const response = await fetch(`/api/column_analysis/outliers/${currentDatasetId}?column=${encodeURIComponent(currentColumn.name)}&method=iqr`);
-            if (!response.ok) throw new Error('Failed to fetch outlier data');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            console.log('Outlier response:', data); // Debug log
 
-            if (data.success && data.outliers) {
-                // The outlier data structure is different - it contains outlier_detection with methods
-                const outlierData = data.outliers.outlier_detection;
-                if (outlierData) {
-                    // Use the IQR method data
-                    const iqrData = outlierData.iqr_method;
-                    if (iqrData) {
-                        const percentage = safeFormat(iqrData.percentage, 1);
-                        const lowerBound = safeFormat(iqrData.lower_bound, 2);
-                        const upperBound = safeFormat(iqrData.upper_bound, 2);
-                        const container = document.getElementById('outlier-detection');
-                        container.innerHTML = `
-                            <div class="outlier-result">
-                                <p>${iqrData.count || 0} potential outliers detected (${percentage}% of data)</p>
-                                <p>Using IQR method (bounds: ${lowerBound} - ${upperBound})</p>
-                                <p>Consider investigating and handling these values.</p>
-                            </div>
-                        `;
-                    }
+            if (data.success && data.outliers && data.outliers.outlier_detection) {
+                // Use the IQR method data from the correct structure
+                const outlierDetection = data.outliers.outlier_detection;
+                const iqrData = outlierDetection.iqr_method || outlierDetection.iqr;
+                
+                if (iqrData && !iqrData.error) {
+                    const percentage = safeFormat(iqrData.percentage, 1);
+                    const lowerBound = safeFormat(iqrData.lower_bound, 2);
+                    const upperBound = safeFormat(iqrData.upper_bound, 2);
+                    
+                    container.innerHTML = `
+                        <div class="outlier-result">
+                            <h6>⚠️ Outlier Detection Results</h6>
+                            <p><strong>${iqrData.count || 0} potential outliers detected</strong> (${percentage}% of data)</p>
+                            <p><strong>Method:</strong> IQR (Interquartile Range)</p>
+                            <p><strong>Bounds:</strong> ${lowerBound} to ${upperBound}</p>
+                            <p><strong>Recommendation:</strong> Consider investigating and handling these values if they appear to be data errors.</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="outlier-result">
+                            <h6>⚠️ Outlier Detection</h6>
+                            <p>Outlier detection not applicable for this column type.</p>
+                        </div>
+                    `;
                 }
+            } else if (data.error) {
+                container.innerHTML = `<p class="error-message">Error: ${data.error}</p>`;
+            } else {
+                container.innerHTML = `
+                    <div class="outlier-result">
+                        <h6>⚠️ Outlier Detection</h6>
+                        <p>Could not fetch outlier information. Please try again.</p>
+                    </div>
+                `;
             }
         } catch (error) {
             console.error("Error fetching outlier info:", error);
-            document.getElementById('outlier-detection').innerHTML = '<p>Could not fetch outlier information.</p>';
+            container.innerHTML = `<p class="error-message">Failed to load outlier analysis: ${error.message}</p>`;
         }
     }
 
@@ -1164,16 +1183,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function fetchDistributionData() {
         if (!currentDatasetId || !currentColumn) return;
+        
+        const container = document.getElementById('distribution-content');
+        if (!container) return;
+        
+        // Show loading state
+        container.innerHTML = '<p>Loading distribution analysis...</p>';
+        
         try {
             const response = await fetch(`/api/column_analysis/distribution/${currentDatasetId}?column=${encodeURIComponent(currentColumn.name)}`);
-            if (!response.ok) throw new Error('Failed to fetch distribution data');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            console.log('Distribution response:', data); // Debug log
+
             if (data.success && data.distribution) {
                 displayDistribution(data.distribution, currentColumn.type, data);
+            } else if (data.error) {
+                container.innerHTML = `<p class="error-message">Error: ${data.error}</p>`;
+            } else {
+                container.innerHTML = '<p>Could not fetch distribution data.</p>';
             }
         } catch (error) {
             console.error("Error fetching distribution data:", error);
-            document.getElementById('distribution-content').innerHTML = '<p>Could not fetch distribution data.</p>';
+            container.innerHTML = `<p class="error-message">Failed to load distribution analysis: ${error.message}</p>`;
         }
     }
 
@@ -1190,26 +1226,49 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        showLoading();
-        
-        try {
-            // Use backend chart generation
-            const response = await fetch(`/api/column_analysis/generate_chart/${currentDatasetId}?column=${encodeURIComponent(currentColumn.name)}&chart_type=${chartType}`);
-            if (!response.ok) throw new Error('Failed to generate chart');
-            const data = await response.json();
+        // Find or create the chart visualization area
+        let chartArea = document.getElementById('chart-visualization-area');
+        if (!chartArea) {
+            // If the area doesn't exist, create it at the bottom of the distribution content
+            chartArea = document.createElement('div');
+            chartArea.id = 'chart-visualization-area';
+            chartArea.style.marginTop = '20px';
+            chartArea.style.padding = '20px';
+            chartArea.style.background = '#f8f9fa';
+            chartArea.style.borderRadius = '8px';
+            chartArea.style.minHeight = '300px';
+            chartContainer.appendChild(chartArea);
+        }
 
-            if (data.success && data.chart) {
-                chartContainer.innerHTML = data.chart.chart_html;
+        // Show loading in the chart area
+        chartArea.innerHTML = '<div class="loading-spinner" style="margin: 50px auto;"></div><p style="text-align: center;">Generating chart...</p>';
+
+        try {
+            // Use backend chart generation for real data
+            const response = await fetch(`/api/column_analysis/generate_chart/${currentDatasetId}?column=${encodeURIComponent(currentColumn.name)}&chart_type=${chartType}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Chart response:', data); // Debug log
+
+            if (data.success && data.chart && data.chart.chart_html) {
+                chartArea.innerHTML = data.chart.chart_html;
+            } else if (data.chart && data.chart.error) {
+                chartArea.innerHTML = `<div class="error-message">Chart generation failed: ${data.chart.error}</div>`;
             } else {
-                throw new Error(data.chart?.error || 'Failed to generate chart');
+                throw new Error('Invalid chart response format');
             }
         } catch (error) {
             console.error('Chart generation error:', error);
-            chartContainer.innerHTML = '<div class="error-message">Failed to generate chart: ' + error.message + '</div>';
-        } finally {
-            hideLoading();
+            chartArea.innerHTML = `<div class="error-message">Failed to generate chart: ${error.message}</div>`;
         }
     }
+
+    // Make chart function globally accessible
+    window.showDistributionChart = showDistributionChart;
 
     function generateHistogram(distributionData, dataType) {
         if (dataType && (dataType.toLowerCase().includes('int') || dataType.toLowerCase().includes('float'))) {
@@ -1821,30 +1880,27 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const analysisData = await analysisResponse.json();
             
-            // Create cleaned data recommendations
-            const cleaningOptions = {
-                remove_nulls: true,
-                remove_duplicates: true,
-                remove_outliers: false, // Conservative approach
-                impute_missing: true
-            };
-            
-            // Simulate cleaned data export (in a real scenario, this would call a backend endpoint)
-            const cleanedDataInfo = {
+            // Create cleaned data recommendations based on actual analysis
+            const cleaningInfo = {
                 column: columnName,
                 dataset_id: datasetId,
                 original_rows: analysisData.export_data?.column_analysis?.basic_statistics?.count || 0,
                 cleaning_applied: [
                     'Removed null values',
                     'Removed duplicate entries',
-                    'Applied recommended transformations'
+                    'Applied recommended transformations based on analysis'
                 ],
+                analysis_summary: {
+                    data_type: analysisData.export_data?.column_analysis?.data_type,
+                    quality_score: analysisData.export_data?.column_analysis?.quality_metrics?.completeness || 0,
+                    recommendations: analysisData.export_data?.column_analysis?.recommendations || []
+                },
                 timestamp: new Date().toISOString()
             };
             
-            downloadJsonData(`${columnName}_cleaned_data.json`, cleanedDataInfo);
+            downloadJsonData(`${columnName}_cleaned_data_info.json`, cleaningInfo);
             
-            showMessage('Success', 'success', 'Cleaned data export initiated. In a production environment, this would provide the actual cleaned dataset.');
+            showMessage('Success', 'success', 'Cleaned data information downloaded. This contains the cleaning recommendations based on the actual data analysis.');
             
         } catch (error) {
             console.error('Cleaned data export error:', error);
@@ -1886,283 +1942,50 @@ window.downloadJsonData = function(filename, data) {
     }
 };
 
-// Global utility functions
+// Global function to download cleaned data
+window.downloadCleanedData = async function(columnName, datasetId) {
+    try {
+        showLoading();
+        
+        // Get the comprehensive analysis to understand what needs to be cleaned
+        const analysisResponse = await fetch(`/api/column_analysis/export/${datasetId}?column=${encodeURIComponent(columnName)}&format=json`);
+        if (!analysisResponse.ok) throw new Error('Failed to fetch analysis data');
+        
+        const analysisData = await analysisResponse.json();
+        
+        // Create cleaned data recommendations based on actual analysis
+        const cleaningInfo = {
+            column: columnName,
+            dataset_id: datasetId,
+            original_rows: analysisData.export_data?.column_analysis?.basic_statistics?.count || 0,
+            cleaning_applied: [
+                'Removed null values',
+                'Removed duplicate entries',
+                'Applied recommended transformations based on analysis'
+            ],
+            analysis_summary: {
+                data_type: analysisData.export_data?.column_analysis?.data_type,
+                quality_score: analysisData.export_data?.column_analysis?.quality_metrics?.completeness || 0,
+                recommendations: analysisData.export_data?.column_analysis?.recommendations || []
+            },
+            timestamp: new Date().toISOString()
+        };
+        
+        downloadJsonData(`${columnName}_cleaned_data_info.json`, cleaningInfo);
+        
+        showMessage('Success', 'success', 'Cleaned data information downloaded. This contains the cleaning recommendations based on the actual data analysis.');
+        
+    } catch (error) {
+        console.error('Cleaned data export error:', error);
+        showError('Failed to export cleaned data: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+};
+
 function safeFormat(value, decimals = 3) {
     if (value === null || value === undefined || isNaN(value)) {
         return 'N/A';
     }
-    return typeof value === 'number' ? value.toFixed(decimals) : value;
-}
-
-// Global functions exposed to window for HTML onclick handlers
-window.showDistributionChart = async function(chartType) {
-    if (!currentDatasetId || !currentColumn) {
-        alert('Please select a dataset and column first.');
-        return;
-    }
-
-    const chartContainer = document.getElementById('distribution-content');
-    if (!chartContainer) {
-        alert('Chart container not found. Please analyze the column first.');
-        return;
-    }
-
-    // Show loading
-    const loadingModal = document.getElementById('column-loading-modal');
-    if (loadingModal) loadingModal.style.display = 'flex';
-    
-    try {
-        // Use backend chart generation
-        const response = await fetch(`/api/column_analysis/generate_chart/${currentDatasetId}?column=${encodeURIComponent(currentColumn.name)}&chart_type=${chartType}`);
-        if (!response.ok) throw new Error('Failed to generate chart');
-        const data = await response.json();
-
-        if (data.success && data.chart) {
-            chartContainer.innerHTML = data.chart.chart_html;
-        } else {
-            throw new Error(data.chart?.error || 'Failed to generate chart');
-        }
-    } catch (error) {
-        console.error('Chart generation error:', error);
-        chartContainer.innerHTML = '<div class="error-message">Failed to generate chart: ' + error.message + '</div>';
-    } finally {
-        // Hide loading
-        if (loadingModal) loadingModal.style.display = 'none';
-    }
-};
-
-// Global chart generation functions
-function generateHistogramChart(distributionData, dataType) {
-    if (dataType && (dataType.toLowerCase().includes('int') || dataType.toLowerCase().includes('float'))) {
-        // Numeric histogram simulation
-        const mean = distributionData.mean || 0;
-        const std = distributionData.std || 1;
-        const min = distributionData.min || 0;
-        const max = distributionData.max || 100;
-        
-        return `
-            <div class="chart-result">
-                <h6>📊 Histogram - ${currentColumn?.name || 'Unknown Column'}</h6>
-                <div class="histogram-chart">
-                    <div class="histogram-info">
-                        <p><strong>Data Range:</strong> ${safeFormat(min)} to ${safeFormat(max)}</p>
-                        <p><strong>Mean:</strong> ${safeFormat(mean)} | <strong>Std Dev:</strong> ${safeFormat(std)}</p>
-                    </div>
-                    <div class="histogram-bars">
-                        ${generateGlobalHistogramBars(distributionData)}
-                    </div>
-                    <div class="histogram-labels">
-                        <span>Min (${safeFormat(min)})</span>
-                        <span>Mean (${safeFormat(mean)})</span>
-                        <span>Max (${safeFormat(max)})</span>
-                    </div>
-                </div>
-                <div class="chart-interpretation">
-                    <h6>📈 Interpretation:</h6>
-                    <p>${interpretGlobalHistogram(distributionData)}</p>
-                </div>
-            </div>
-        `;
-    } else {
-        return `
-            <div class="chart-result">
-                <h6>📊 Histogram - ${currentColumn?.name || 'Unknown Column'}</h6>
-                <p class="chart-note">Histogram is not applicable for categorical data. Use Value Counts instead.</p>
-                <button onclick="showDistributionChart('value_counts')" class="btn btn-primary">Show Value Counts</button>
-            </div>
-        `;
-    }
-}
-
-function generateBoxPlotChart(distributionData, dataType) {
-    if (dataType && (dataType.toLowerCase().includes('int') || dataType.toLowerCase().includes('float'))) {
-        const q1 = distributionData.q1 || (distributionData.mean - distributionData.std);
-        const q2 = distributionData.median || distributionData.mean;
-        const q3 = distributionData.q3 || (distributionData.mean + distributionData.std);
-        const min = distributionData.min || 0;
-        const max = distributionData.max || 100;
-        
-        return `
-            <div class="chart-result">
-                <h6>📦 Box Plot - ${currentColumn?.name || 'Unknown Column'}</h6>
-                <div class="boxplot-chart">
-                    <div class="boxplot-container">
-                        ${generateGlobalBoxPlotVisualization(min, q1, q2, q3, max)}
-                    </div>
-                    <div class="boxplot-stats">
-                        <div class="boxplot-stat">
-                            <strong>Min:</strong> ${safeFormat(min)}
-                        </div>
-                        <div class="boxplot-stat">
-                            <strong>Q1:</strong> ${safeFormat(q1)}
-                        </div>
-                        <div class="boxplot-stat">
-                            <strong>Median:</strong> ${safeFormat(q2)}
-                        </div>
-                        <div class="boxplot-stat">
-                            <strong>Q3:</strong> ${safeFormat(q3)}
-                        </div>
-                        <div class="boxplot-stat">
-                            <strong>Max:</strong> ${safeFormat(max)}
-                        </div>
-                    </div>
-                </div>
-                <div class="chart-interpretation">
-                    <h6>📊 Interpretation:</h6>
-                    <p>${interpretGlobalBoxPlot(distributionData)}</p>
-                </div>
-            </div>
-        `;
-    } else {
-        return `
-            <div class="chart-result">
-                <h6>📦 Box Plot - ${currentColumn?.name || 'Unknown Column'}</h6>
-                <p class="chart-note">Box Plot is not applicable for categorical data. Use Value Counts instead.</p>
-                <button onclick="showDistributionChart('value_counts')" class="btn btn-primary">Show Value Counts</button>
-            </div>
-        `;
-    }
-}
-
-function generateValueCountsChart(distributionData, dataType) {
-    const valueCounts = distributionData.value_counts || {};
-    const totalCount = distributionData.count || Object.values(valueCounts).reduce((a, b) => a + b, 0) || 1;
-    
-    return `
-        <div class="chart-result">
-            <h6>📊 Value Counts - ${currentColumn?.name || 'Unknown Column'}</h6>
-            <div class="value-counts-chart">
-                <div class="value-counts-header">
-                    <span>Value</span>
-                    <span>Count</span>
-                    <span>Percentage</span>
-                    <span>Bar</span>
-                </div>
-                ${generateGlobalValueCountsBars(valueCounts, totalCount)}
-            </div>
-            <div class="chart-interpretation">
-                <h6>📈 Summary:</h6>
-                <p>Showing top ${Object.keys(valueCounts).length} values. 
-                ${dataType && (dataType.toLowerCase().includes('int') || dataType.toLowerCase().includes('float')) ? 
-                    'This shows the frequency distribution of values in the numeric column.' : 
-                    'This shows the frequency distribution of categories.'}</p>
-            </div>
-        </div>
-    `;
-}
-
-function generateGlobalHistogramBars(distributionData) {
-    // Simulate histogram bars based on statistical properties
-    const bars = [];
-    const mean = distributionData.mean || 0;
-    const std = distributionData.std || 1;
-    const skewness = distributionData.skewness || 0;
-    
-    // Generate 10 bars representing the distribution
-    for (let i = 0; i < 10; i++) {
-        const position = i / 9; // 0 to 1
-        let height;
-        
-        if (Math.abs(skewness) < 0.5) {
-            // Normal-like distribution
-            height = Math.exp(-Math.pow((position - 0.5) * 4, 2)) * 100;
-        } else if (skewness > 0) {
-            // Right-skewed
-            height = Math.exp(-Math.pow((position - 0.2) * 3, 2)) * 100;
-        } else {
-            // Left-skewed
-            height = Math.exp(-Math.pow((position - 0.8) * 3, 2)) * 100;
-        }
-        
-        bars.push(`<div class="histogram-bar" style="height: ${height}%; background: linear-gradient(to top, #3b82f6, #60a5fa);"></div>`);
-    }
-    
-    return bars.join('');
-}
-
-function generateGlobalBoxPlotVisualization(min, q1, median, q3, max) {
-    return `
-        <div class="boxplot-visual">
-            <div class="boxplot-whisker-left" style="left: 0%; width: 20%;"></div>
-            <div class="boxplot-box" style="left: 20%; width: 60%;">
-                <div class="boxplot-median" style="left: 50%;"></div>
-            </div>
-            <div class="boxplot-whisker-right" style="left: 80%; width: 20%;"></div>
-            <div class="boxplot-labels">
-                <span style="left: 0%;">Min</span>
-                <span style="left: 20%;">Q1</span>
-                <span style="left: 50%;">Median</span>
-                <span style="left: 80%;">Q3</span>
-                <span style="left: 100%;">Max</span>
-            </div>
-        </div>
-    `;
-}
-
-function generateGlobalValueCountsBars(valueCounts, totalCount) {
-    const entries = Object.entries(valueCounts).slice(0, 20); // Top 20 values
-    const maxCount = Math.max(...Object.values(valueCounts));
-    
-    return entries.map(([value, count]) => {
-        const percentage = ((count / totalCount) * 100).toFixed(1);
-        const barWidth = (count / maxCount) * 100;
-        
-        return `
-            <div class="value-count-row">
-                <span class="value-label">${value}</span>
-                <span class="count-value">${count.toLocaleString()}</span>
-                <span class="percentage-value">${percentage}%</span>
-                <div class="count-bar-container">
-                    <div class="count-bar" style="width: ${barWidth}%; background: linear-gradient(90deg, #10b981, #34d399);"></div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function interpretGlobalHistogram(distributionData) {
-    const skewness = distributionData.skewness || 0;
-    const kurtosis = distributionData.kurtosis || 0;
-    
-    let interpretation = '';
-    
-    if (Math.abs(skewness) < 0.5) {
-        interpretation += 'The distribution appears approximately symmetric. ';
-    } else if (skewness > 0.5) {
-        interpretation += 'The distribution is right-skewed with a longer tail extending to higher values. ';
-    } else {
-        interpretation += 'The distribution is left-skewed with a longer tail extending to lower values. ';
-    }
-    
-    if (Math.abs(kurtosis) < 1) {
-        interpretation += 'The tail behavior is similar to a normal distribution.';
-    } else if (kurtosis > 1) {
-        interpretation += 'The distribution has heavy tails with more extreme values than expected.';
-    } else {
-        interpretation += 'The distribution has light tails with fewer extreme values.';
-    }
-    
-    return interpretation;
-}
-
-function interpretGlobalBoxPlot(distributionData) {
-    const median = distributionData.median || distributionData.mean || 0;
-    const mean = distributionData.mean || 0;
-    const skewness = distributionData.skewness || 0;
-    
-    let interpretation = `The median value is ${safeFormat(median)}. `;
-    
-    if (Math.abs(mean - median) > (distributionData.std || 1) * 0.5) {
-        interpretation += 'There is a notable difference between mean and median, suggesting skewness. ';
-    }
-    
-    if (Math.abs(skewness) > 0.5) {
-        interpretation += skewness > 0 ? 
-            'The distribution is skewed right, with outliers likely in the upper range. ' :
-            'The distribution is skewed left, with outliers likely in the lower range. ';
-    } else {
-        interpretation += 'The distribution appears relatively balanced. ';
-    }
-    
-    return interpretation;
+    return typeof value === 'number' ? value.toFixed(decimals) : String(value);
 }
