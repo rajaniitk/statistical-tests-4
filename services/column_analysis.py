@@ -228,9 +228,31 @@ class ColumnAnalysis:
         try:
             if column not in self.df.columns:
                 raise ValueError(f"Column {column} not found")
+            
             data = self.df[column].dropna()
+            
+            # Check if column is numeric
             if not pd.api.types.is_numeric_dtype(data):
-                return {'error': 'Outlier analysis only applicable to numeric columns'}
+                return {
+                    'column': column,
+                    'method': method,
+                    'error': 'Outlier analysis only applicable to numeric columns',
+                    'outlier_detection': {},
+                    'outlier_impact': {},
+                    'recommendations': ['Outlier analysis is not applicable to non-numeric data types.']
+                }
+            
+            # Check if we have enough data
+            if len(data) < 2:
+                return {
+                    'column': column,
+                    'method': method,
+                    'error': 'Insufficient data for outlier analysis (need at least 2 non-null values)',
+                    'outlier_detection': {},
+                    'outlier_impact': {},
+                    'recommendations': ['Need more data points for meaningful outlier analysis.']
+                }
+            
             analysis = {
                 'column': column,
                 'method': method,
@@ -238,22 +260,39 @@ class ColumnAnalysis:
                 'outlier_impact': {},
                 'recommendations': []
             }
+            
             # Multiple outlier detection methods
-            methods_to_test = ['iqr', 'zscore', 'modified_zscore'] # 'isolation_forest' can be added if sklearn is installed and relevant
+            methods_to_test = ['iqr', 'zscore', 'modified_zscore']
             for outlier_method in methods_to_test:
                 try:
                     outliers = self._detect_outliers_method(data, outlier_method)
                     analysis['outlier_detection'][outlier_method] = outliers
                 except Exception as e:
                     analysis['outlier_detection'][outlier_method] = {'error': str(e)}
-            # Analyze outlier impact
-            analysis['outlier_impact'] = self._analyze_outlier_impact(data, analysis['outlier_detection'])
+            
+            # Analyze outlier impact only if we have valid outlier detection results
+            try:
+                analysis['outlier_impact'] = self._analyze_outlier_impact(data, analysis['outlier_detection'])
+            except Exception as e:
+                analysis['outlier_impact'] = {'error': f'Impact analysis failed: {str(e)}'}
+            
             # Generate recommendations
-            analysis['recommendations'] = self._generate_outlier_recommendations(analysis)
+            try:
+                analysis['recommendations'] = self._generate_outlier_recommendations(analysis)
+            except Exception as e:
+                analysis['recommendations'] = [f'Could not generate recommendations: {str(e)}']
+            
             return self._convert_numpy_types(analysis)
         except Exception as e:
             self.logger.error(f"Error in outlier analysis for column {column}: {str(e)}")
-            raise
+            return {
+                'column': column,
+                'method': method,
+                'error': f'Outlier analysis failed: {str(e)}',
+                'outlier_detection': {},
+                'outlier_impact': {},
+                'recommendations': []
+            }
 
     def missing_value_analysis(self, column: str) -> Dict[str, Any]:
         """Comprehensive missing value analysis"""
@@ -358,12 +397,66 @@ class ColumnAnalysis:
     def detect_outliers(self, file_path: str, column: str, method: str = 'iqr') -> Dict[str, Any]:
         """Detect outliers for API endpoint"""
         try:
-            self._load_dataframe(file_path)
+            # Load dataframe with better error handling
+            try:
+                self._load_dataframe(file_path)
+            except FileNotFoundError:
+                return {
+                    'success': False,
+                    'error': f'Dataset file not found at path: {file_path}',
+                    'outlier_detection': {},
+                    'outlier_impact': {},
+                    'recommendations': []
+                }
+            except Exception as e:
+                return {
+                    'success': False,
+                    'error': f'Failed to load dataset: {str(e)}',
+                    'outlier_detection': {},
+                    'outlier_impact': {},
+                    'recommendations': []
+                }
+            
+            # Check if dataframe was loaded successfully
+            if self.df is None or self.df.empty:
+                return {
+                    'success': False,
+                    'error': 'Dataset is empty or could not be loaded',
+                    'outlier_detection': {},
+                    'outlier_impact': {},
+                    'recommendations': []
+                }
+            
+            # Check if column exists
+            if column not in self.df.columns:
+                available_columns = list(self.df.columns)
+                return {
+                    'success': False,
+                    'error': f'Column "{column}" not found. Available columns: {available_columns}',
+                    'outlier_detection': {},
+                    'outlier_impact': {},
+                    'recommendations': []
+                }
+            
+            # Perform outlier analysis
             outliers = self.outlier_analysis(column, method)
+            
+            # Add success flag if analysis completed
+            if 'error' not in outliers:
+                outliers['success'] = True
+            else:
+                outliers['success'] = False
+            
             return self._convert_numpy_types(outliers)
         except Exception as e:
             self.logger.error(f"Error detecting outliers: {str(e)}")
-            raise
+            return {
+                'success': False,
+                'error': f'An unexpected error occurred during outlier detection: {str(e)}',
+                'outlier_detection': {},
+                'outlier_impact': {},
+                'recommendations': []
+            }
 
     def analyze_distribution(self, file_path: str, column: str) -> Dict[str, Any]:
         """Analyze distribution for API endpoint"""
@@ -1476,24 +1569,50 @@ class ColumnAnalysis:
             return {'impact_on_mean': None, 'impact_on_std': None}
 
         impact = {}
-        # Impact on mean
-        mean_all = clean_data.mean()
-        iqr_outliers = data[(data < outlier_detections['iqr_method']['lower_bound']) | (data > outlier_detections['iqr_method']['upper_bound'])]
-        if len(iqr_outliers) > 0:
-            mean_without_outliers = clean_data.drop(iqr_outliers.index).mean()
-            impact_mean = mean_all - mean_without_outliers
-            impact['impact_on_mean'] = float(impact_mean)
-        else:
-            impact['impact_on_mean'] = 0.0
+        
+        # Check if IQR method results are valid and contain the required keys
+        iqr_results = outlier_detections.get('iqr_method', {})
+        if isinstance(iqr_results, dict) and 'lower_bound' in iqr_results and 'upper_bound' in iqr_results and 'error' not in iqr_results:
+            # Impact on mean
+            mean_all = clean_data.mean()
+            try:
+                # Filter outliers based on IQR bounds
+                iqr_outliers = clean_data[(clean_data < iqr_results['lower_bound']) | (clean_data > iqr_results['upper_bound'])]
+                if len(iqr_outliers) > 0:
+                    # Remove outliers and calculate new mean
+                    data_without_outliers = clean_data[~clean_data.index.isin(iqr_outliers.index)]
+                    if len(data_without_outliers) > 0:
+                        mean_without_outliers = data_without_outliers.mean()
+                        impact_mean = mean_all - mean_without_outliers
+                        impact['impact_on_mean'] = float(impact_mean)
+                    else:
+                        impact['impact_on_mean'] = 0.0
+                else:
+                    impact['impact_on_mean'] = 0.0
 
-        # Impact on std deviation
-        std_all = clean_data.std()
-        if len(iqr_outliers) > 0:
-            std_without_outliers = clean_data.drop(iqr_outliers.index).std()
-            impact_std = std_all - std_without_outliers
-            impact['impact_on_std'] = float(impact_std)
+                # Impact on std deviation
+                std_all = clean_data.std()
+                if len(iqr_outliers) > 0:
+                    data_without_outliers = clean_data[~clean_data.index.isin(iqr_outliers.index)]
+                    if len(data_without_outliers) > 1:  # Need at least 2 points for std
+                        std_without_outliers = data_without_outliers.std()
+                        impact_std = std_all - std_without_outliers
+                        impact['impact_on_std'] = float(impact_std)
+                    else:
+                        impact['impact_on_std'] = 0.0
+                else:
+                    impact['impact_on_std'] = 0.0
+                    
+            except Exception as e:
+                # If there's any error in the calculation, set default values
+                impact['impact_on_mean'] = 0.0
+                impact['impact_on_std'] = 0.0
+                impact['error'] = f'Impact calculation failed: {str(e)}'
         else:
+            # If IQR results are not valid, set default values
+            impact['impact_on_mean'] = 0.0
             impact['impact_on_std'] = 0.0
+            impact['note'] = 'Impact analysis not available due to outlier detection errors'
 
         return impact
 
@@ -1504,18 +1623,24 @@ class ColumnAnalysis:
 
         # Check which methods detected outliers and the percentage
         for method, detection_info in outlier_detections.items():
-            if 'percentage' in detection_info:
+            if isinstance(detection_info, dict) and 'percentage' in detection_info and 'error' not in detection_info:
                 outlier_percentage = detection_info['percentage']
                 if outlier_percentage > 5:
                     recommendations.append(f"Significant outliers detected by '{method}' ({outlier_percentage:.1f}%). Consider investigating and handling them (e.g., capping, transformation, removal).")
                 elif outlier_percentage > 1:
                     recommendations.append(f"Moderate outliers detected by '{method}' ({outlier_percentage:.1f}%). Review their presence and potential impact.")
 
+        # Check outlier impact information
         impact = analysis.get('outlier_impact', {})
-        if impact.get('impact_on_mean') is not None and abs(impact.get('impact_on_mean', 0)) > 0.1 * abs(data.mean()): # Example: impact is >10% of mean
-             recommendations.append("Outliers appear to be significantly influencing the mean. Consider robust statistical methods or outlier treatment.")
-        if impact.get('impact_on_std') is not None and abs(impact.get('impact_on_std', 0)) > 0.1 * abs(data.std()): # Example: impact is >10% of std
-            recommendations.append("Outliers appear to be significantly influencing the standard deviation. Consider robust statistical methods or outlier treatment.")
+        if impact.get('impact_on_mean') is not None and impact.get('impact_on_mean') != 0:
+            recommendations.append("Outliers appear to be influencing the mean. Consider robust statistical methods or outlier treatment.")
+        if impact.get('impact_on_std') is not None and impact.get('impact_on_std') != 0:
+            recommendations.append("Outliers appear to be influencing the standard deviation. Consider robust statistical methods or outlier treatment.")
+
+        # General recommendations if outliers were detected
+        if any(isinstance(detection_info, dict) and detection_info.get('percentage', 0) > 0 for detection_info in outlier_detections.values()):
+            recommendations.append("Consider the context and domain knowledge when deciding how to handle outliers.")
+            recommendations.append("Options include: removal, capping/winsorizing, transformation, or using robust algorithms.")
 
         return recommendations
 
